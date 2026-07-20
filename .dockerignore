@@ -1,0 +1,13 @@
+.env
+.env.*
+.venv
+venv
+__pycache__
+*.pyc
+.git
+credentials.json
+token.json
+*.md
+!requirements_mcp.txt
+docs
+scripts/__pycache__

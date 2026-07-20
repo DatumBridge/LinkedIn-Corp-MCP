@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LinkedIn Corp MCP — Company Page Test UI</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --text: #e7ecf3;
+      --muted: #9aa8bc;
+      --accent: #0a66c2;
+      --border: #2a3a4f;
+      --ok: #7dcea0;
+      --err: #f5a3a3;
+      --warn: #e8c547;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(1000px 500px at 8% -10%, #1b3a5f, transparent),
+        linear-gradient(160deg, #0f1419, #121a24 45%, #0d1218);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+    h1 { font-size: 1.55rem; margin: 0 0 0.2rem; letter-spacing: -0.02em; }
+    h2 { font-size: 1rem; margin: 0 0 0.75rem; color: var(--muted); font-weight: 600; }
+    p, .hint { color: var(--muted); margin: 0.35rem 0 0.8rem; line-height: 1.45; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+    .layout {
+      display: grid;
+      gap: 1rem;
+      max-width: 1100px;
+    }
+    @media (min-width: 960px) {
+      .layout { grid-template-columns: 1.1fr 0.9fr; align-items: start; }
+    }
+    .panel {
+      background: color-mix(in srgb, var(--panel) 92%, black);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+    .row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin: 0.6rem 0; }
+    button, a.button {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 7px;
+      padding: 0.5rem 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      font: inherit;
+    }
+    button.secondary, a.secondary { background: #2a3a4f; }
+    button.danger { background: #8b3a3a; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    label { display: block; margin: 0.7rem 0 0.28rem; color: var(--muted); font-size: 0.88rem; }
+    textarea, input, select {
+      width: 100%;
+      background: #101822;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+    }
+    textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0b1016;
+      border-radius: 8px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      min-height: 12rem;
+      max-height: 28rem;
+      overflow: auto;
+      margin: 0;
+      font-size: 0.82rem;
+    }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    .steps { margin: 0; padding-left: 1.15rem; color: var(--muted); }
+    .steps li { margin: 0.35rem 0; }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .badge.on { border-color: var(--ok); color: var(--ok); }
+    .check { display: flex; gap: 0.45rem; align-items: center; margin: 0.55rem 0; }
+    .check input { width: auto; }
+  </style>
+</head>
+<body>
+  <h1>LinkedIn Corp MCP — Company Page Test UI</h1>
+  <p>
+    Connect OAuth (or paste <code>token.json</code>), then call tools over Streamable HTTP
+    <code>/mcp/</code>. Tokens stay in browser localStorage only.
+    <span id="uiStatus" class="badge">checking…</span>
+  </p>
+
+  <div class="layout">
+    <div class="panel">
+      <h2>1) Credentials</h2>
+      <div class="row">
+        <a class="button" href="/oauth/start">Connect with LinkedIn</a>
+        <button class="secondary" id="btnInfo" type="button">OAuth info</button>
+        <button class="secondary" id="btnHealth" type="button">Health</button>
+        <button class="secondary" id="btnClear" type="button">Clear token</button>
+      </div>
+      <label for="creds">credentials_json</label>
+      <textarea id="creds" rows="7" placeholder='{"type":"oauth","access_token":"...","refresh_token":"...","client_id":"..."}'></textarea>
+      <p class="hint">
+        CLI alternative: <code>python scripts/oauth_connect.py</code> then paste
+        <code>token.json</code> here. Keep <code>LINKEDIN_CLIENT_SECRET</code> in server env for refresh.
+      </p>
+
+      <h2>2) Tool call</h2>
+      <label for="tool">Tool</label>
+      <select id="tool">
+        <option value="get_me">get_me</option>
+        <option value="create_post">create_post</option>
+        <option value="create_image_post">create_image_post</option>
+        <option value="get_post">get_post</option>
+        <option value="delete_post">delete_post</option>
+        <option value="tools/list">tools/list (protocol)</option>
+      </select>
+
+      <div id="fieldsCommon">
+        <label for="text">text</label>
+        <input id="text" placeholder="Post commentary" value="LinkedIn MCP manual test" />
+
+        <label for="visibility">visibility</label>
+        <select id="visibility">
+          <option value="CONNECTIONS" selected>CONNECTIONS (safer default)</option>
+          <option value="PUBLIC">PUBLIC</option>
+        </select>
+
+        <label for="article">article_url (optional, https only)</label>
+        <input id="article" placeholder="https://example.com/article" />
+
+        <label for="postUrn">post_urn (get/delete)</label>
+        <input id="postUrn" placeholder="urn:li:ugcPost:... or urn:li:share:..." />
+
+        <label for="imageFile">image file (create_image_post)</label>
+        <input id="imageFile" type="file" accept="image/jpeg,image/png,image/gif,image/webp" />
+
+        <div class="check">
+          <input id="dryRun" type="checkbox" checked />
+          <label for="dryRun" style="margin:0">dry_run (preview only — recommended first)</label>
+        </div>
+        <div class="check">
+          <input id="confirm" type="checkbox" />
+          <label for="confirm" style="margin:0">confirm=true (required to publish/delete)</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="btnCall" type="button">Call tool</button>
+        <button class="secondary" id="btnList" type="button">List tools</button>
+      </div>
+      <p class="hint">
+        Side effects need <code>confirm=true</code>. Start with <code>get_me</code>, then
+        <code>create_post</code> with dry_run, then confirm.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>Output</h2>
+      <pre id="out">Ready.</pre>
+
+      <h2 style="margin-top:1rem">Quick checklist</h2>
+      <ol class="steps">
+        <li>Health returns <code>{"status":"ok","service":"linkedin-corp-mcp"}</code></li>
+        <li>Connect OAuth or paste token → <code>get_me</code> returns person URN</li>
+        <li><code>create_post</code> with dry_run → request_body preview</li>
+        <li>Uncheck dry_run, check confirm → real post URN</li>
+        <li><code>get_post</code> / <code>delete_post</code> with confirm</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    const LS = "linkedin_oauth_token";
+    const out = document.getElementById("out");
+    const credsEl = document.getElementById("creds");
+    const params = new URLSearchParams(location.search);
+    let sessionId = null;
+    let rpcId = 1;
+
+    function show(msg, cls) {
+      out.className = cls || "";
+      out.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+    }
+
+    function loadCreds() {
+      const raw = localStorage.getItem(LS);
+      if (raw) credsEl.value = raw;
+    }
+
+    async function redeemOAuth(state) {
+      const resp = await fetch("/oauth/token?state=" + encodeURIComponent(state), {
+        credentials: "same-origin",
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        show(data, "err");
+        return;
+      }
+      const pretty = JSON.stringify(data, null, 2);
+      localStorage.setItem(LS, pretty);
+      credsEl.value = pretty;
+      show({ redeemed: true, scopes: data.scopes, note: "client_secret is not returned" }, "ok");
+      history.replaceState({}, "", "/test");
+    }
+
+    async function parseMcpResponse(resp) {
+      const ctype = (resp.headers.get("Content-Type") || "").toLowerCase();
+      const text = await resp.text();
+      if (ctype.includes("text/event-stream")) {
+        const lines = text.split("\n").filter((l) => l.startsWith("data:"));
+        const payloads = lines.map((l) => {
+          try { return JSON.parse(l.slice(5).trim()); } catch { return l; }
+        });
+        return payloads.length === 1 ? payloads[0] : payloads;
+      }
+      try { return JSON.parse(text); } catch { return text; }
+    }
+
+    async function mcp(method, paramsObj) {
+      if (!sessionId) {
+        const init = await fetch("/mcp/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: rpcId++,
+            method: "initialize",
+            params: {
+              protocolVersion: "2024-11-05",
+              capabilities: {},
+              clientInfo: { name: "linkedin-test-ui", version: "1.0" },
+            },
+          }),
+        });
+        sessionId = init.headers.get("Mcp-Session-Id") || init.headers.get("mcp-session-id");
+        if (!sessionId) {
+          const body = await parseMcpResponse(init);
+          throw new Error("No Mcp-Session-Id. Response: " + JSON.stringify(body));
+        }
+        await fetch("/mcp/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Mcp-Session-Id": sessionId,
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "notifications/initialized",
+          }),
+        });
+      }
+
+      const call = await fetch("/mcp/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json, text/event-stream",
+          "Mcp-Session-Id": sessionId,
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: rpcId++,
+          method,
+          params: paramsObj,
+        }),
+      });
+      return parseMcpResponse(call);
+    }
+
+    function buildArgs() {
+      const tool = document.getElementById("tool").value;
+      if (tool === "tools/list") return null;
+      const creds = JSON.parse(credsEl.value || "{}");
+      const args = { credentials_json: JSON.stringify(creds) };
+      const text = document.getElementById("text").value;
+      const visibility = document.getElementById("visibility").value;
+      const article = document.getElementById("article").value.trim();
+      const postUrn = document.getElementById("postUrn").value.trim();
+      const dryRun = document.getElementById("dryRun").checked;
+      const confirm = document.getElementById("confirm").checked;
+
+      if (tool === "create_post") {
+        args.text = text;
+        args.visibility = visibility;
+        if (article) args.article_url = article;
+        args.dry_run = dryRun;
+        args.confirm = confirm;
+      } else if (tool === "create_image_post") {
+        const b64 = window.__imageB64;
+        if (!b64) throw new Error("Choose an image file first");
+        args.image_base64 = b64;
+        args.image_media_type = window.__imageMime || "image/jpeg";
+        args.text = text;
+        args.visibility = visibility;
+        args.dry_run = dryRun;
+        args.confirm = confirm;
+      } else if (tool === "get_post" || tool === "delete_post") {
+        if (!postUrn) throw new Error("post_urn is required");
+        args.post_urn = postUrn;
+        if (tool === "delete_post") args.confirm = confirm;
+      }
+      return args;
+    }
+
+    document.getElementById("imageFile").onchange = async (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      window.__imageMime = file.type || "image/jpeg";
+      const buf = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      window.__imageB64 = btoa(binary);
+      show({ image_loaded: true, mime: window.__imageMime, bytes: bytes.length }, "ok");
+    };
+
+    document.getElementById("btnClear").onclick = () => {
+      localStorage.removeItem(LS);
+      credsEl.value = "";
+      sessionId = null;
+      show("Token cleared.", "ok");
+    };
+
+    document.getElementById("btnHealth").onclick = async () => {
+      try {
+        const resp = await fetch("/health");
+        show(await resp.json(), resp.ok ? "ok" : "err");
+      } catch (e) {
+        show(String(e), "err");
+      }
+    };
+
+    document.getElementById("btnInfo").onclick = async () => {
+      try {
+        const resp = await fetch("/oauth/info");
+        show(await resp.json(), resp.ok ? "ok" : "err");
+      } catch (e) {
+        show(String(e), "err");
+      }
+    };
+
+    document.getElementById("btnList").onclick = async () => {
+      try {
+        sessionId = null;
+        const result = await mcp("tools/list", {});
+        show(result, "ok");
+      } catch (e) {
+        show(String(e), "err");
+      }
+    };
+
+    document.getElementById("btnCall").onclick = async () => {
+      try {
+        const tool = document.getElementById("tool").value;
+        if (tool === "tools/list") {
+          sessionId = null;
+          show(await mcp("tools/list", {}), "ok");
+          return;
+        }
+        if (!credsEl.value.trim()) throw new Error("Paste credentials_json or Connect with LinkedIn first");
+        localStorage.setItem(LS, credsEl.value);
+        const args = buildArgs();
+        sessionId = null; // fresh session per call keeps tests deterministic
+        const result = await mcp("tools/call", { name: tool, arguments: args });
+        show(result, "ok");
+      } catch (e) {
+        show(String(e), "err");
+      }
+    };
+
+    (async function boot() {
+      loadCreds();
+      try {
+        const h = await fetch("/health");
+        const hj = await h.json();
+        const badge = document.getElementById("uiStatus");
+        if (h.ok) {
+          badge.textContent = "UI online";
+          badge.classList.add("on");
+        } else {
+          badge.textContent = "health failed";
+        }
+        if (params.get("oauth_error")) {
+          show({ oauth_error: params.get("oauth_error") }, "err");
+        } else if (params.get("oauth")) {
+          await redeemOAuth(params.get("oauth"));
+        } else {
+          show({ ready: true, health: hj }, "ok");
+        }
+      } catch (e) {
+        document.getElementById("uiStatus").textContent = "unreachable";
+        show(String(e), "err");
+      }
+    })();
+  </script>
+</body>
+</html>
