@@ -124,7 +124,11 @@ def get_me(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ProfileResponse:
-    """Get the authenticated LinkedIn member profile (operator context)."""
+    """Get the authenticated LinkedIn member profile (operator context).
+
+        Capabilities: linkedin-corp.get_me
+Outputs: success
+        """
     logger.info("MCP: get_me")
     try:
         if not credentials_path and not credentials_json:
@@ -142,7 +146,11 @@ def list_my_organizations(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> OrganizationListResponse:
-    """List Company Pages the authenticated member can administer."""
+    """List Company Pages the authenticated member can administer.
+
+        Capabilities: linkedin-corp.list_my_organizations
+Outputs: success
+        """
     logger.info("MCP: list_my_organizations")
     try:
         if not credentials_path and not credentials_json:
@@ -168,7 +176,11 @@ def get_organization(
         description="Organization vanity name (slug from linkedin.com/company/...)",
     ),
 ) -> OrganizationResponse:
-    """Fetch Company Page metadata by id or vanity name."""
+    """Fetch Company Page metadata by id or vanity name.
+
+        Capabilities: linkedin-corp.get_organization
+Outputs: success
+        """
     logger.info("MCP: get_organization")
     try:
         if not credentials_path and not credentials_json:
@@ -193,6 +205,7 @@ def create_organization_post(
     text: str = Field(
         default="",
         description="Post commentary (required unless article_url is set)",
+    json_schema_extra={"x-datumbridge-encoding": "plain"}
     ),
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
@@ -221,7 +234,11 @@ def create_organization_post(
         description="If true, return the request payload without calling LinkedIn",
     ),
 ) -> CreatePostResponse:
-    """Create a Company Page feed post (text and/or article). Requires confirm=true."""
+    """Create a Company Page feed post (text and/or article). Requires confirm=true.
+
+        Capabilities: linkedin-corp.create_organization_post
+Outputs: success
+        """
     logger.info(
         "MCP: create_organization_post visibility=%s dry_run=%s confirm=%s",
         visibility,
@@ -276,8 +293,9 @@ def create_organization_image_post(
     image_base64: str = Field(
         ...,
         description="Image bytes as base64 (gated by LINKEDIN_CORP_MAX_IMAGE_BYTES)",
+    json_schema_extra={"x-datumbridge-encoding": "base64"}
     ),
-    text: str = Field(default="", description="Post commentary text"),
+    text: str = Field(default="", description="Post commentary text", json_schema_extra={"x-datumbridge-encoding": "plain"}),
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
     image_media_type: str = Field(
@@ -297,7 +315,11 @@ def create_organization_image_post(
         description="If true, validate without uploading/publishing",
     ),
 ) -> CreatePostResponse:
-    """Create a Company Page feed post with an image. Requires confirm=true."""
+    """Create a Company Page feed post with an image. Requires confirm=true.
+
+        Capabilities: linkedin-corp.create_organization_image_post
+Outputs: success
+        """
     logger.info(
         "MCP: create_organization_image_post visibility=%s dry_run=%s confirm=%s",
         visibility,
@@ -350,7 +372,11 @@ def get_organization_post(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> PostResponse:
-    """Fetch a Company Page UGC post by URN."""
+    """Fetch a Company Page UGC post by URN.
+
+        Capabilities: linkedin-corp.get_organization_post
+Outputs: success
+        """
     logger.info("MCP: get_organization_post")
     try:
         if not credentials_path and not credentials_json:
@@ -376,7 +402,11 @@ def delete_organization_post(
         description="Must be true to delete (side effect)",
     ),
 ) -> ActionResponse:
-    """Delete a Company Page UGC post by URN. Requires confirm=true."""
+    """Delete a Company Page UGC post by URN. Requires confirm=true.
+
+        Capabilities: linkedin-corp.delete_organization_post
+Outputs: success
+        """
     logger.info("MCP: delete_organization_post confirm=%s", confirm)
     try:
         if not credentials_path and not credentials_json:
