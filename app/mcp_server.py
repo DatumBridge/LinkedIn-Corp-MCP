@@ -31,6 +31,7 @@ from app.schemas.mcp_models import (
     ProfileResponse,
 )
 from app.services.linkedin_corp_service import LinkedInCorpService
+from app.capability_bind import bind_declared_capabilities
 
 logger = logging.getLogger(__name__)
 
@@ -424,6 +425,9 @@ Outputs: success
         logger.error("delete_organization_post failed: %s", e.error_code)
         return ActionResponse(success=False, error=_error_response(e))
 
+
+
+bind_declared_capabilities(mcp)
 
 _base_app = mcp.http_app()
 
